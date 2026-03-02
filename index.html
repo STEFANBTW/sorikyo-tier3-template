@@ -6,6 +6,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description"
         content="NOIR INK STUDIO — Premium tattoo and body art studio in Amsterdam. Custom tattoos, fine line portraits, piercings, and consultations.">
+
+    <!-- OpenGraph / Social Meta Tags (Tier 1 Upgrade) -->
+    <meta property="og:title" content="NOIR INK STUDIO — Premium Tattoo & Body Art">
+    <meta property="og:description"
+        content="Amsterdam's premier destination for custom tattoos and professional piercings.">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="/placeholder-og.jpg">
+    <meta property="og:url" content="https://stefanbtw.github.io/sorikyo-tier3-template/">
+    <meta name="theme-color" content="#050505">
+
     <title>NOIR INK STUDIO — Premium Tattoo & Body Art</title>
 
     <!-- Fonts -->
@@ -20,26 +30,41 @@
 
     <style>
         /* ─── Page-Specific Layout (human-authored) ──────────── */
-        /* The theme.css provides tokens. Layout is manual. */
-
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
-        body {
-            font-family: var(--font-primary);
-            background: var(--color-bg);
-            color: var(--color-text);
-            line-height: var(--leading-normal);
-            -webkit-font-smoothing: antialiased;
-        }
-
         .container {
             max-width: 960px;
             margin: 0 auto;
             padding: 0 var(--space-lg);
+        }
+
+        /* Toggles Bar */
+        .top-toggles {
+            display: flex;
+            justify-content: flex-end;
+            gap: var(--space-sm);
+            padding: var(--space-sm) 0;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .toggle-btn {
+            background: transparent;
+            border: 1px solid var(--color-border);
+            color: var(--color-text-muted);
+            font-family: var(--font-mono);
+            font-size: var(--text-xs);
+            padding: 4px 8px;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+
+        .toggle-btn:hover {
+            color: var(--color-text);
+            border-color: var(--color-text);
         }
 
         /* Header */
@@ -121,7 +146,8 @@
         }
 
         /* Search */
-        .search-input {
+        .search-input,
+        .form-input {
             width: 100%;
             padding: var(--space-md);
             background: var(--color-surface);
@@ -132,13 +158,16 @@
             font-size: var(--text-base);
             outline: none;
             transition: border-color var(--transition-base);
+            margin-bottom: var(--space-sm);
         }
 
-        .search-input:focus {
+        .search-input:focus,
+        .form-input:focus {
             border-color: var(--color-accent);
         }
 
-        .search-input::placeholder {
+        .search-input::placeholder,
+        .form-input::placeholder {
             color: var(--color-text-subtle);
         }
 
@@ -146,23 +175,17 @@
             margin-top: var(--space-md);
         }
 
-        /* Chat */
-        .chat-wrapper {
+        /* Chat / Forms */
+        .chat-wrapper,
+        .booking-form {
             background: var(--color-surface);
             border: 1px solid var(--color-border);
             border-radius: var(--radius-lg);
             overflow: hidden;
+            padding: var(--space-lg);
         }
 
-        /* 3D Model */
-        .model-viewer {
-            width: 100%;
-            height: 400px;
-            border-radius: var(--radius-md);
-            overflow: hidden;
-        }
-
-        /* Contact Actions */
+        /* Buttons */
         .actions {
             display: flex;
             gap: var(--space-md);
@@ -196,6 +219,7 @@
             background: var(--color-accent);
             color: var(--color-primary);
             border-color: var(--color-accent);
+            font-weight: bold;
         }
 
         .btn-primary:hover {
@@ -211,11 +235,30 @@
             border-radius: var(--radius-md);
         }
 
+        /* Map Embed */
+        .map-wrapper {
+            width: 100%;
+            height: 300px;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            background: var(--color-surface-elevated);
+            border: 1px solid var(--color-border);
+        }
+
+        /* 3D Viewer */
+        .model-viewer {
+            width: 100%;
+            height: 400px;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            background: #000;
+        }
+
         /* Intent Search */
         .intent-bar {
             display: flex;
             gap: var(--space-sm);
-            margin-bottom: var(--space-xl);
+            margin: var(--space-lg) 0;
         }
 
         .intent-bar input {
@@ -230,153 +273,181 @@
             outline: none;
         }
 
-        /* Footer */
+        /* SVG Image Demo */
+        .artist-img {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            border-radius: var(--radius-md);
+            margin-bottom: var(--space-md);
+        }
+
+        /* Footer & Scroll Top */
         footer {
             padding: var(--space-2xl) 0;
             text-align: center;
-            font-family: var(--font-mono);
-            font-size: var(--text-xs);
             color: var(--color-text-subtle);
-            letter-spacing: 0.1em;
+        }
+
+        .scroll-top {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 100;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
     </style>
 </head>
 
 <body>
-    <div class="container">
+    <!-- Top Bar: UX Toggles -->
+    <nav class="top-toggles container">
+        <button class="toggle-btn" data-sorikyo-toggle="contrast">Toggle High Contrast</button>
+        <button class="toggle-btn" data-sorikyo-toggle="motion">Reduce Motion</button>
+    </nav>
 
-        <!-- ═══ Intent Navigation Bar ══════════════════════════ -->
-        <div class="intent-bar" style="margin-top: var(--space-lg);">
-            <input type="text" placeholder="Try: 'Show me reviews' or 'I want to book a tattoo'"
+    <main class="container">
+
+        <!-- Intent Navigation -->
+        <nav class="intent-bar">
+            <input type="text" placeholder="Type: 'Book fine line portrait' or 'Scroll to map'"
                 data-sorikyo-intent-nav="true" id="intent-input">
-        </div>
+        </nav>
 
-        <!-- ═══ Header ═════════════════════════════════════════ -->
+        <!-- Header -->
         <header id="about">
             <h1>NOIR INK</h1>
             <p>Premium Tattoo & Body Art — Amsterdam</p>
         </header>
 
-        <!-- ═══ Services ═══════════════════════════════════════ -->
+        <!-- Artist Profile (Image Proxy Demo) -->
+        <section id="artists">
+            <h2>// Artists - Image Proxy</h2>
+            <!-- Original high-res image wrapped in data-sorikyo-image-proxy -->
+            <!-- The API will use Sharp to return WebP/AVIF scaled accordingly -->
+            <img class="artist-img" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                data-sorikyo-image-proxy="https://images.unsplash.com/photo-1598371839696-5b5bb00b1150?auto=format&fit=crop&q=80&w=1600"
+                alt="Lead Artist - Blackwork Specialist">
+            <p style="font-size: var(--text-sm); color: var(--color-text-muted);">
+                This placeholder image automatically morphs via the `data-sorikyo-image-proxy` attribute, passing its
+                URL to the high-performance Fastify `sharp` endpoint to serve WebP tailored to exact screen dimensions.
+            </p>
+        </section>
+
+        <!-- Services -->
         <section id="services">
             <h2>// Services</h2>
             <div class="services-grid">
-
-                <div class="service-card" data-sorikyo-track="svc_custom_tattoo" data-sorikyo-haptic="light">
+                <article class="service-card" data-sorikyo-track="svc_custom_tattoo" data-sorikyo-haptic="light">
                     <h3>Custom Tattoo Session</h3>
                     <p>Bespoke tattoo design and application by your chosen artist</p>
-                    <span class="price">€150 / hour — 2hr min</span>
-                </div>
+                    <span class="price">€150/hr</span>
+                </article>
 
-                <div class="service-card" data-sorikyo-track="svc_fine_line" data-sorikyo-haptic="light">
+                <article class="service-card" data-sorikyo-track="svc_fine_line" data-sorikyo-haptic="light">
                     <h3>Fine Line Portrait</h3>
                     <p>Precision fine-line portraiture with micro-needle technique</p>
-                    <span class="price">€200 / hour — 3hr min</span>
-                </div>
+                    <span class="price">€200/hr</span>
+                </article>
 
-                <div class="service-card" data-sorikyo-track="svc_coverup_consult" data-sorikyo-haptic="light">
-                    <h3>Cover-Up Consultation</h3>
-                    <p>Free assessment of existing work and cover-up feasibility</p>
-                    <span class="price">Complimentary — 30 min</span>
-                </div>
-
-                <div class="service-card" data-sorikyo-track="svc_piercing_standard" data-sorikyo-haptic="light">
-                    <h3>Piercing — Standard</h3>
+                <article class="service-card" data-sorikyo-track="svc_piercing_standard" data-sorikyo-haptic="light">
+                    <h3>Standard Piercing</h3>
                     <p>Earlobe, nostril, and standard cartilage piercings</p>
-                    <span class="price">€45 / session</span>
-                </div>
-
-                <div class="service-card" data-sorikyo-track="svc_piercing_premium" data-sorikyo-haptic="light">
-                    <h3>Piercing — Premium</h3>
-                    <p>Dermal anchors, industrials, and advanced placements</p>
-                    <span class="price">€85 / session</span>
-                </div>
-
+                    <span class="price">€45</span>
+                </article>
             </div>
         </section>
 
-        <!-- ═══ Semantic Vibe Search ═══════════════════════════ -->
-        <section id="shop">
-            <h2>// Shop — Vibe Search</h2>
-            <input class="search-input" type="text"
-                placeholder="Describe what you're looking for... (e.g., 'minimal geometric jewelry')"
-                data-sorikyo-action="vibe-search" data-sorikyo-target="vibe-search-results" id="vibe-search-input">
-            <div id="vibe-search-results"></div>
-        </section>
-
-        <!-- ═══ 3D Model Viewer ════════════════════════════════ -->
+        <!-- Spatial Commerce (3D) -->
         <section id="gallery">
-            <h2>// Spatial Commerce — 3D Preview</h2>
+            <h2>// Spatial Commerce (3D)</h2>
             <p style="color:var(--color-text-muted);font-size:var(--text-sm);margin-bottom:var(--space-md);">
-                Interactive 3D model viewer. Replace the URL in data-sorikyo-3d-model with your GLTF/GLB asset.
+                Interactive 3D model. Draco compression enabled. Lazy-loaded via IntersectionObserver.
             </p>
             <div class="model-viewer"
                 data-sorikyo-3d-model="https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/DamagedHelmet/glTF-Binary/DamagedHelmet.glb">
             </div>
         </section>
 
-        <!-- ═══ AI Receptionist (RAG Chat) ════════════════════ -->
-        <section id="faq">
-            <h2>// AI Receptionist</h2>
-            <div class="chat-wrapper" data-sorikyo-action="rag-chat">
-                <!-- SDK auto-generates chat messages container, input, and send button -->
-            </div>
+        <!-- Semantic Vibe Search -->
+        <section id="shop">
+            <h2>// Vibe Search (pgvector)</h2>
+            <input class="search-input" type="text" placeholder="e.g. 'I want something minimalistic and geometric'"
+                data-sorikyo-action="vibe-search" data-sorikyo-target="vibe-search-results">
+            <div id="vibe-search-results"></div>
         </section>
 
-        <!-- ═══ Glassmorphism Inline Editing Demo ══════════════ -->
-        <section id="reviews">
-            <h2>// Inline Editing Demo</h2>
-            <div class="editable-block" id="editable-text">
-                <p><strong>Studio Philosophy</strong></p>
-                <p>We believe in the permanence of precision. Each line, each shade, each placement is the result of
-                    deliberate, scientific artistry. Click the edit button below to modify this text inline using the
-                    glassmorphism overlay.</p>
-            </div>
-            <button class="btn" style="margin-top: var(--space-md);" data-sorikyo-glass-edit="editable-text"
-                data-sorikyo-haptic="heavy">
-                Edit Inline
-            </button>
-        </section>
-
-        <!-- ═══ Contact / WhatsApp ═════════════════════════════ -->
-        <section id="contact">
-            <h2>// Contact</h2>
-            <div class="actions">
-                <a class="btn btn-primary" data-sorikyo-action="whatsapp-deep" data-sorikyo-phone="+31612345678"
-                    data-sorikyo-service="Custom Tattoo Session" data-sorikyo-haptic="success" href="#">
-                    WhatsApp — Book Now
-                </a>
-
-                <button class="btn" data-sorikyo-offline-morph="true"
-                    data-sorikyo-online-content="📧 studio@noirink.com"
-                    data-sorikyo-offline-content="📞 Call +31 6 1234 5678" data-sorikyo-haptic="light">
-                    📧 studio@noirink.com
-                </button>
-            </div>
-            <p style="margin-top:var(--space-lg);font-size:var(--text-sm);color:var(--color-text-muted);">
-                Keizersgracht 420, 1016 GD Amsterdam — Tue–Sat 10:00–20:00
-            </p>
-        </section>
-
-        <!-- ═══ Booking Section (placeholder) ═════════════════ -->
+        <!-- Booking Engine & Paystack -->
         <section id="booking">
-            <h2>// Booking Engine</h2>
-            <p style="font-size:var(--text-sm);color:var(--color-text-muted);">
-                The booking engine is powered by the <code
-                    style="font-family:var(--font-mono);color:var(--color-accent);">POST /api/bookings</code> endpoint
-                with ACID transaction support and time-slot collision prevention. Integrate your custom booking form
-                here using standard fetch calls to the server.
-            </p>
+            <h2>// ACID Booking With Paystack</h2>
+            <form class="booking-form" data-sorikyo-form="booking">
+                <input class="form-input" type="text" name="customerName" placeholder="Full Name" required>
+                <input class="form-input" type="email" name="customerEmail" placeholder="Email Address" required>
+                <input class="form-input" type="tel" name="customerPhone" placeholder="Phone Number" required>
+
+                <select class="form-input" name="serviceId" required
+                    style="appearance: auto; background: var(--color-surface); color: var(--color-text);">
+                    <option value="" disabled selected>Select a Service</option>
+                    <option value="svc_custom_tattoo">Custom Tattoo (30% Deposit Required)</option>
+                    <option value="svc_piercing_standard">Standard Piercing (No Deposit)</option>
+                </select>
+
+                <!-- Mock Staff ID -->
+                <input type="hidden" name="staffId" value="staff_001">
+
+                <div style="display: flex; gap: var(--space-sm); margin-bottom: var(--space-md);">
+                    <input class="form-input" type="datetime-local" name="startTime" required>
+                    <input class="form-input" type="datetime-local" name="endTime" required>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center;">Confirm &
+                    Pay Deposit</button>
+            </form>
         </section>
 
-        <!-- ═══ Footer ═════════════════════════════════════════ -->
-        <footer>
-            <p>NOIR INK STUDIO © 2026 — Powered by SoriKyo Tier 3</p>
-        </footer>
+        <!-- AI Chat -->
+        <section id="faq">
+            <h2>// AI Receptionist (Dual Tier)</h2>
+            <p style="color:var(--color-text-muted);font-size:var(--text-sm);margin-bottom:var(--space-md);">
+                Try asking "How much?" (hits L1 Regex instant fallback) vs "Do you do biomechanical?" (hits L2
+                generative pgvector RAG).
+            </p>
+            <div class="chat-wrapper" data-sorikyo-action="rag-chat"></div>
+        </section>
 
-    </div>
+        <!-- Contact & Map -->
+        <section id="contact">
+            <h2>// Location & Contact</h2>
+            <div class="map-wrapper" data-sorikyo-map="52.3702,4.8951">
+                <!-- Data API injects iframe here -->
+            </div>
 
-    <!-- SoriKyo Data-Attribute SDK -->
+            <div class="actions" style="margin-top: var(--space-lg);">
+                <a class="btn btn-primary" data-sorikyo-action="whatsapp-deep" data-sorikyo-phone="+31612345678"
+                    href="#">WhatsApp Studio</a>
+                <button class="btn" data-sorikyo-offline-morph="true" data-sorikyo-online-content="studio@noirink.com"
+                    data-sorikyo-offline-content="Call +31 6 1234 5678">studio@noirink.com</button>
+                <a class="btn" href="/unknown" data-sorikyo-prefetch="/unknown">Test 404 Pre-fetch</a>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Scroll Top Hook -->
+    <button class="btn btn-primary scroll-top" data-sorikyo-scroll-top="true" aria-label="Scroll to top">↑</button>
+
+    <footer>
+        <p>NOIR INK STUDIO © 2026</p>
+    </footer>
+
+    <!-- Paystack Inline Popup Script -->
+    <script src="https://js.paystack.co/v1/inline.js"></script>
+    <!-- SoriKyo SDK -->
     <script src="/sorikyo-tier3.js"></script>
 </body>
 

@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://stefanbtw.github.io/sorikyo-tier3-template/sitemap.xml
