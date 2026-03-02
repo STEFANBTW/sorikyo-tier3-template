@@ -905,11 +905,214 @@
     }
 
     // ============================================================
+    // MODULE 13: Booking Form & Paystack Integration
+    // data-sorikyo-form="booking"
+    // ============================================================
+
+    function initBookingForm() {
+        const forms = document.querySelectorAll('form[data-sorikyo-form="booking"]');
+        forms.forEach(form => {
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const btn = form.querySelector('button[type="submit"]');
+                const originalText = btn.textContent;
+                btn.textContent = 'Processing...';
+                btn.disabled = true;
+
+                try {
+                    const formData = new FormData(form);
+                    const body = Object.fromEntries(formData.entries());
+                    // Formatting ISO date for DB
+                    body.startTime = new Date(body.startTime).toISOString();
+                    body.endTime = new Date(body.endTime).toISOString();
+
+                    const res = await fetch(`${API_BASE}/api/bookings/create`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(body)
+                    });
+
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.message || 'Booking failed');
+
+                    // If deposit required, trigger Paystack
+                    if (data.depositRequired > 0 && window.PaystackPop) {
+                        const paystack = new window.PaystackPop();
+                        paystack.newTransaction({
+                            key: window.SORIKYO_PAYSTACK_PUBLIC || 'pk_test_dummy',
+                            email: body.customerEmail || 'test@example.com',
+                            amount: data.depositRequired * 100, // Kobo/Cents
+                            currency: 'EUR',
+                            ref: data.paymentReference,
+                            onSuccess: (transaction) => {
+                                alert('Payment successful! Reference: ' + transaction.reference);
+                                form.reset();
+                            },
+                            onCancel: () => {
+                                alert('Payment cancelled. Booking is pending.');
+                            }
+                        });
+                    } else {
+                        alert('Booking confirmed!');
+                        form.reset();
+                    }
+                } catch (err) {
+                    alert('Error: ' + err.message);
+                } finally {
+                    btn.textContent = originalText;
+                    btn.disabled = false;
+                }
+            });
+        });
+    }
+
+    // ============================================================
+    // MODULE 14: Predictive Prefetching
+    // data-sorikyo-prefetch="[url]"
+    // ============================================================
+
+    function initPrefetch() {
+        if (prefersReducedMotion() || navigator.connection?.saveData) return;
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const url = entry.target.dataset.sorikyoPrefetch;
+                    if (url && !document.querySelector(`link[rel="prefetch"][href="${url}"]`)) {
+                        const link = document.createElement('link');
+                        link.rel = 'prefetch';
+                        link.href = url;
+                        document.head.appendChild(link);
+                        observer.unobserve(entry.target);
+                    }
+                }
+            });
+        }, { rootMargin: '100px' });
+
+        document.querySelectorAll('[data-sorikyo-prefetch]').forEach(el => observer.observe(el));
+    }
+
+    // ============================================================
+    // MODULE 15: Lazy Map Embed
+    // data-sorikyo-map="[lat,lng]"
+    // ============================================================
+
+    function initLazyMaps() {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const [lat, lng] = entry.target.dataset.sorikyoMap.split(',');
+                    const iframe = document.createElement('iframe');
+                    iframe.width = "100%";
+                    iframe.height = "100%";
+                    iframe.style.border = "0";
+                    iframe.loading = "lazy";
+                    iframe.src = `https://maps.google.com/maps?q=${lat},${lng}&z=15&output=embed`;
+                    entry.target.appendChild(iframe);
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { rootMargin: '250px' });
+
+        document.querySelectorAll('[data-sorikyo-map]').forEach(el => observer.observe(el));
+    }
+
+    // ============================================================
+    // MODULE 16: UX Toggles (Contrast / Motion)
+    // data-sorikyo-toggle="[contrast|motion]"
+    // ============================================================
+
+    function initUXToggles() {
+        document.querySelectorAll('[data-sorikyo-toggle]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const type = btn.dataset.sorikyoToggle; // 'contrast' or 'motion'
+                const html = document.documentElement;
+                const cls = `sorikyo-${type}-override`;
+
+                if (html.classList.contains(cls)) {
+                    html.classList.remove(cls);
+                    localStorage.removeItem(cls);
+                } else {
+                    html.classList.add(cls);
+                    localStorage.setItem(cls, 'true');
+                }
+            });
+        });
+
+        // Apply saved states on load
+        ['contrast', 'motion'].forEach(type => {
+            if (localStorage.getItem(`sorikyo-${type}-override`)) {
+                document.documentElement.classList.add(`sorikyo-${type}-override`);
+            }
+        });
+    }
+
+    // ============================================================
+    // MODULE 17: Image Optimization Proxy
+    // data-sorikyo-image-proxy="[url]"
+    // ============================================================
+
+    function initImageProxy() {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const img = entry.target;
+                    const src = img.dataset.sorikyoImageProxy;
+                    const w = img.getAttribute('width') || img.clientWidth || 800;
+                    img.src = `${API_BASE}/api/images/proxy?url=${encodeURIComponent(src)}&w=${w}`;
+                    observer.unobserve(img);
+                }
+            });
+        });
+
+        document.querySelectorAll('img[data-sorikyo-image-proxy]').forEach(el => observer.observe(el));
+    }
+
+    // ============================================================
+    // MODULE 18: Scroll to Top
+    // data-sorikyo-scroll-top="true"
+    // ============================================================
+
+    function initScrollTop() {
+        const btns = document.querySelectorAll('[data-sorikyo-scroll-top]');
+        btns.forEach(btn => {
+            btn.style.opacity = '0';
+            btn.style.pointerEvents = 'none';
+            btn.style.transition = 'opacity 0.3s ease';
+
+            window.addEventListener('scroll', throttle(() => {
+                if (window.scrollY > 300) {
+                    btn.style.opacity = '1';
+                    btn.style.pointerEvents = 'auto';
+                } else {
+                    btn.style.opacity = '0';
+                    btn.style.pointerEvents = 'none';
+                }
+            }, 100));
+
+            btn.addEventListener('click', () => {
+                window.scrollTo({ top: 0, behavior: prefersReducedMotion() ? 'auto' : 'smooth' });
+            });
+        });
+    }
+
+    // Simple throttle helper for scroll
+    function throttle(fn, wait) {
+        let time = Date.now();
+        return function () {
+            if ((time + wait - Date.now()) < 0) {
+                fn();
+                time = Date.now();
+            }
+        }
+    }
+
+    // ============================================================
     // INIT: Bind everything on DOMContentLoaded
     // ============================================================
 
     document.addEventListener('DOMContentLoaded', () => {
-        console.log('[SoriKyo] Tier 3 SDK initializing...');
+        console.log('[SoriKyo] Tier 3 Omni-Stack SDK initializing...');
 
         // Core infrastructure
         initServiceWorker();
@@ -924,6 +1127,14 @@
         initVibeSearch();
         initRAGChat();
         initIntentNav();
+
+        // Expanded Omni-Stack Phase Modules
+        initBookingForm();
+        initPrefetch();
+        initLazyMaps();
+        initUXToggles();
+        initImageProxy();
+        initScrollTop();
 
         console.log('[SoriKyo] Tier 3 SDK ready ✅');
     });

@@ -15,56 +15,22 @@ datasource db {
   extensions = [vector]
 }
 
-// ─── Enterprise Booking Engine ──────────────────────────────
-// ACID-compliant booking with unique constraints to prevent
-// time-slot collisions during high-concurrency traffic spikes.
-
-model Enterprise_Booking {
-  id          String   @id @default(uuid())
-  userId      String
-  serviceId   String
-  artistId    String?
-  startTime   DateTime
-  endTime     DateTime
-  status      BookingStatus @default(PENDING)
-  depositPaid Boolean      @default(false)
-  totalPrice  Float
-  notes       String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  // Prevent double-booking: same artist cannot have overlapping slots
-  @@unique([artistId, startTime, endTime], name: "unique_artist_timeslot")
-  @@index([userId])
-  @@index([serviceId])
-  @@index([startTime, endTime])
-  @@map("enterprise_bookings")
-}
-
-enum BookingStatus {
-  PENDING
-  CONFIRMED
-  IN_PROGRESS
-  COMPLETED
-  CANCELLED
-  NO_SHOW
-}
-
-// ─── Spatial Commerce Inventory ─────────────────────────────
+// ─── Omni Service Inventory ──────────────────────────────
+// Replaces Spatial_Commerce_Inventory in Phase 1 Omni-Stack upgrades
 // Stores product/service inventory with 3D model metadata
-// for the WebGL/Three.js Draco spatial commerce environment.
 
-model Spatial_Commerce_Inventory {
+model Omni_Service_Inventory {
   id                    String   @id @default(uuid())
   sku                   String   @unique
   name                  String
   description           String?
+  duration_minutes      Int      @default(60)
   price                 Float
-  stock                 Int      @default(0)
+  stock_count           Int      @default(0)
   category              String?
-  dracoGlbUrl           String?  @map("draco_glb_url")
-  normalMapUrl          String?  @map("normal_map_url")
-  pbrRoughnessMetadata  Json?    @map("pbr_roughness_metadata")
+  draco_glb_url         String?  
+  normal_map_url        String?  
+  pbr_roughness_metadata Json?    
   thumbnailUrl          String?
   isActive              Boolean  @default(true)
   createdAt             DateTime @default(now())
@@ -72,12 +38,71 @@ model Spatial_Commerce_Inventory {
 
   @@index([category])
   @@index([isActive])
-  @@map("spatial_commerce_inventory")
+  @@map("omni_service_inventory")
+}
+
+// ─── Enterprise Booking Engine ──────────────────────────────
+// ACID-compliant booking with strict unique constraints
+
+model Enterprise_Booking {
+  id               String   @id @default(uuid())
+  customerName     String
+  customerPhone    String
+  serviceId        String
+  staffId          String
+  startTime        DateTime
+  endTime          DateTime
+  status           BookingStatus @default(PENDING)
+  deposit_paid     Float         @default(0)
+  paymentReference String?       @unique
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  
+  // CRITICAL: Prevent double-booking overlapping slots mathematically
+  @@unique([staffId, startTime], name: "unique_staff_starttime")
+  @@unique([staffId, endTime], name: "unique_staff_endtime")
+  
+  @@index([serviceId])
+  @@index([staffId])
+  @@index([startTime, endTime])
+  @@map("enterprise_bookings")
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  NO_SHOW
+  COMPLETED
+}
+
+// ─── Staff Member ───────────────────────────────────────────
+
+model Staff_Member {
+  id        String   @id @default(uuid())
+  name      String
+  role      String
+  email     String   @unique
+  is_active Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("staff_members")
+}
+
+// ─── Verified Review ────────────────────────────────────────
+
+model Verified_Review {
+  id         String   @id @default(uuid())
+  booking_id String   @unique 
+  rating     Int      
+  text       String
+  createdAt  DateTime @default(now())
+
+  @@map("verified_reviews")
 }
 
 // ─── Knowledge Embedding (pgvector) ─────────────────────────
 // Stores 1536-dimensional vectors from OpenAI text-embedding-3-small
-// for both Semantic Vibe Search and Generative RAG AI Receptionist.
 
 model Knowledge_Embedding {
   id        String   @id @default(uuid())
@@ -92,8 +117,6 @@ model Knowledge_Embedding {
 }
 
 // ─── Dynamic QR Analytics ───────────────────────────────────
-// Logs device type, geolocation, timestamp, and campaign target
-// for pre-redirect analytics on dynamic QR code scans.
 
 model Dynamic_QR_Analytics {
   id               String   @id @default(uuid())
@@ -101,8 +124,8 @@ model Dynamic_QR_Analytics {
   deviceType       String?  @map("device_type")
   userAgent        String?  @map("user_agent")
   ipAddress        String?  @map("ip_address")
-  geolocationLat   Float?   @map("geolocation_lat")
-  geolocationLng   Float?   @map("geolocation_lng")
+  geolocationLat   Float?   @map("geolocation_lat_lng_lat")
+  geolocationLng   Float?   @map("geolocation_lat_lng_lng")
   referrer         String?
   scannedAt        DateTime @default(now())
 
@@ -114,7 +137,6 @@ model Dynamic_QR_Analytics {
 }
 
 // ─── QR Campaign ────────────────────────────────────────────
-// Stores the active campaign URLs for the Dynamic QR Redirector.
 
 model QR_Campaign {
   id          String   @id @default(uuid())

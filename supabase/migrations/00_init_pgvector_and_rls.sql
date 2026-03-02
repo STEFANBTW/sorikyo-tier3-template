@@ -1,172 +1,126 @@
 -- ============================================================
--- SoriKyo Tier 3 — Initial Migration
--- pgvector Extension + Row-Level Security Policies
+-- SoriKyo Tier 3 — PostgreSQL Init, pgvector & RLS
+-- Phase 1 Omni-Stack Blueprint
 -- ============================================================
 
--- Enable pgvector for 1536-dimensional embedding storage
+-- 1. Enable pgvector for 1536-dimensional embeddings
 CREATE EXTENSION IF NOT EXISTS vector;
-
--- Enable UUID generation
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
--- ─── Row-Level Security ─────────────────────────────────────
--- Enforce data privacy at the database layer, independent of
--- the Node.js server. Defense-in-depth architecture.
-
--- 1. Spatial Commerce Inventory: PUBLIC READ, AUTH-ONLY WRITE
-ALTER TABLE spatial_commerce_inventory ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "inventory_public_read"
-  ON spatial_commerce_inventory
-  FOR SELECT
-  TO anon, authenticated
-  USING (is_active = true);
-
-CREATE POLICY "inventory_auth_insert"
-  ON spatial_commerce_inventory
-  FOR INSERT
-  TO authenticated
-  WITH CHECK (true);
-
-CREATE POLICY "inventory_auth_update"
-  ON spatial_commerce_inventory
-  FOR UPDATE
-  TO authenticated
-  USING (true)
-  WITH CHECK (true);
-
-CREATE POLICY "inventory_auth_delete"
-  ON spatial_commerce_inventory
-  FOR DELETE
-  TO authenticated
-  USING (true);
-
--- 2. Enterprise Bookings: AUTH-ONLY READ/WRITE (own records)
-ALTER TABLE enterprise_bookings ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "bookings_user_read_own"
-  ON enterprise_bookings
-  FOR SELECT
-  TO authenticated
-  USING (
-    "userId" = auth.uid()::text
-  );
-
-CREATE POLICY "bookings_user_insert"
-  ON enterprise_bookings
-  FOR INSERT
-  TO authenticated
-  WITH CHECK (
-    "userId" = auth.uid()::text
-  );
-
-CREATE POLICY "bookings_user_update_own"
-  ON enterprise_bookings
-  FOR UPDATE
-  TO authenticated
-  USING (
-    "userId" = auth.uid()::text
-  )
-  WITH CHECK (
-    "userId" = auth.uid()::text
-  );
-
--- 3. Knowledge Embeddings: PUBLIC READ (for vibe search), AUTH-ONLY WRITE
-ALTER TABLE knowledge_embeddings ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "embeddings_public_read"
-  ON knowledge_embeddings
-  FOR SELECT
-  TO anon, authenticated
-  USING (true);
-
-CREATE POLICY "embeddings_auth_write"
-  ON knowledge_embeddings
-  FOR INSERT
-  TO authenticated
-  WITH CHECK (true);
-
-CREATE POLICY "embeddings_auth_update"
-  ON knowledge_embeddings
-  FOR UPDATE
-  TO authenticated
-  USING (true)
-  WITH CHECK (true);
-
--- 4. QR Campaigns: PUBLIC READ (for redirect), AUTH-ONLY WRITE
-ALTER TABLE qr_campaigns ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "campaigns_public_read"
-  ON qr_campaigns
-  FOR SELECT
-  TO anon, authenticated
-  USING (is_active = true);
-
-CREATE POLICY "campaigns_auth_write"
-  ON qr_campaigns
-  FOR INSERT
-  TO authenticated
-  WITH CHECK (true);
-
-CREATE POLICY "campaigns_auth_update"
-  ON qr_campaigns
-  FOR UPDATE
-  TO authenticated
-  USING (true)
-  WITH CHECK (true);
-
--- 5. QR Analytics: AUTH-ONLY (server writes via service role)
-ALTER TABLE dynamic_qr_analytics ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "analytics_service_insert"
-  ON dynamic_qr_analytics
-  FOR INSERT
-  TO authenticated
-  WITH CHECK (true);
-
-CREATE POLICY "analytics_auth_read"
-  ON dynamic_qr_analytics
-  FOR SELECT
-  TO authenticated
-  USING (true);
-
--- ─── pgvector Cosine Similarity Function ────────────────────
--- Used by Semantic Vibe Search and RAG AI Receptionist
--- to find the K nearest knowledge embeddings.
-
-CREATE OR REPLACE FUNCTION match_documents(
+-- 2. Create the Cosine Similarity Function for Semantic Vibe Search
+CREATE OR REPLACE FUNCTION match_documents (
   query_embedding vector(1536),
-  match_threshold float DEFAULT 0.78,
-  match_count int DEFAULT 5
+  match_threshold float,
+  match_count int
 )
 RETURNS TABLE (
   id uuid,
   content text,
   metadata jsonb,
-  source text,
   similarity float
 )
-LANGUAGE plpgsql
+LANGUAGE sql STABLE
 AS $$
-BEGIN
-  RETURN QUERY
   SELECT
-    ke.id::uuid,
-    ke.content,
-    ke.metadata::jsonb,
-    ke.source,
-    1 - (ke.embedding <=> query_embedding) AS similarity
-  FROM knowledge_embeddings ke
-  WHERE 1 - (ke.embedding <=> query_embedding) > match_threshold
-  ORDER BY ke.embedding <=> query_embedding
+    k.id::uuid,
+    k.content,
+    k.metadata::jsonb,
+    1 - (k.embedding <=> query_embedding) AS similarity
+  FROM knowledge_embeddings k
+  WHERE 1 - (k.embedding <=> query_embedding) > match_threshold
+  ORDER BY k.embedding <=> query_embedding
   LIMIT match_count;
-END;
 $$;
 
--- ─── Vector Index ───────────────────────────────────────────
--- IVFFlat index for sub-50ms retrieval on embedding columns.
+-- 3. Row-Level Security (RLS) Enablement
 
-CREATE INDEX IF NOT EXISTS idx_knowledge_embeddings_vector
-  ON knowledge_embeddings
-  USING ivfflat (embedding vector_cosine_ops)
-  WITH (lists = 100);
+-- Ensure tables exist first (Prisma db push runs before/after this)
+-- We use ALTER TABLE ... ENABLE ROW LEVEL SECURITY;
+-- Note: Assuming Prisma creates tables first. IF running this BEFORE Prisma, 
+-- create dummy tables or run Prisma `db push` then run this. 
+-- For a robust template, we will explicitly define policies assuming tables exist.
+
+-- Table: omni_service_inventory (Public read, authenticated write)
+ALTER TABLE IF EXISTS "omni_service_inventory" ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Allow public read-only access to omni_service_inventory."
+ON "omni_service_inventory" FOR SELECT
+USING (true);
+
+-- Table: qr_campaigns (Public read for redirector)
+ALTER TABLE IF EXISTS "qr_campaigns" ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Allow public read access to active QR campaigns."
+ON "qr_campaigns" FOR SELECT
+USING ("isActive" = true);
+
+-- Table: dynamic_qr_analytics (Service role / backend only)
+ALTER TABLE IF EXISTS "dynamic_qr_analytics" ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Allow service role insert access to qr_analytics."
+ON "dynamic_qr_analytics" FOR INSERT
+WITH CHECK (true); -- Usually called securely from Node.js
+
+-- Table: enterprise_bookings (Insert-only by public, read by admins)
+ALTER TABLE IF EXISTS "enterprise_bookings" ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Allow public to insert bookings."
+ON "enterprise_bookings" FOR INSERT
+WITH CHECK (true);
+
+-- Table: knowledge_embeddings (Public read for semantic search)
+ALTER TABLE IF EXISTS "knowledge_embeddings" ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Allow public read access to knowledge vectors."
+ON "knowledge_embeddings" FOR SELECT
+USING (true);
+
+-- Table: staff_members
+ALTER TABLE IF EXISTS "staff_members" ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Allow public read access to active staff."
+ON "staff_members" FOR SELECT
+USING ("is_active" = true);
+
+-- Table: verified_reviews
+ALTER TABLE IF EXISTS "verified_reviews" ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Allow public read access to reviews."
+ON "verified_reviews" FOR SELECT
+USING (true);
+
+
+-- 4. Constraint Triggers (ACID Compliance & Business Logic)
+
+-- Ensure Stock Count >= 0
+DO $$ 
+BEGIN 
+  IF EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'omni_service_inventory') THEN
+    ALTER TABLE "omni_service_inventory" ADD CONSTRAINT enforce_stock_positive CHECK ("stock_count" >= 0);
+  END IF;
+END $$;
+
+-- Ensure Reviews only belong to COMPLETED Bookings
+CREATE OR REPLACE FUNCTION enforce_completed_booking_for_reviews()
+RETURNS trigger AS $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM enterprise_bookings
+    WHERE id = NEW.booking_id AND status = 'COMPLETED'
+  ) THEN
+    RAISE EXCEPTION 'A verified review can only be attached to a COMPLETED booking.';
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- We try to attach the trigger if table exists
+DO $$
+BEGIN
+  IF EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'verified_reviews') THEN
+    DROP TRIGGER IF EXISTS trg_enforce_completed_booking ON "verified_reviews";
+    CREATE TRIGGER trg_enforce_completed_booking
+    BEFORE INSERT OR UPDATE ON "verified_reviews"
+    FOR EACH ROW EXECUTE FUNCTION enforce_completed_booking_for_reviews();
+  END IF;
+END $$;

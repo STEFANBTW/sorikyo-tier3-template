@@ -19,6 +19,10 @@
             "name": "NOIR INK STUDIO",
             "support_email": "studio@noirink.com",
             "whatsapp_number": "+31612345678",
+            "physical_address_lat_lng": [
+                52.3702,
+                4.8951
+            ],
             "physical_address": "Keizersgracht 420, 1016 GD Amsterdam"
         },
         "ai_knowledge_base_seed": [
@@ -41,7 +45,10 @@
                 "price_unit": "hour",
                 "minimum_duration_minutes": 120,
                 "deposit_percentage": 30,
-                "category": "tattoo"
+                "category": "tattoo",
+                "draco_glb_url": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/DamagedHelmet/glTF-Binary/DamagedHelmet.glb",
+                "normal_map_url": "",
+                "pbr_roughness_metadata": "0.8"
             },
             {
                 "id": "svc_fine_line",
@@ -83,7 +90,38 @@
                 "deposit_percentage": 0,
                 "category": "piercing"
             }
-        ]
+        ],
+        "faq_database_seed": [
+            {
+                "keywords": [
+                    "price",
+                    "cost",
+                    "how much"
+                ],
+                "answer": "Our custom sessions start at €150/hour (2hr minimum). Standard piercings are €45."
+            },
+            {
+                "keywords": [
+                    "hours",
+                    "open",
+                    "time"
+                ],
+                "answer": "We are open Tuesday-Saturday, 10:00-20:00. Closed Sun-Mon."
+            },
+            {
+                "keywords": [
+                    "walk in",
+                    "walk-in",
+                    "appointment"
+                ],
+                "answer": "Walk-ins are accepted Tuesday-Thursday subject to availability. Bookings are highly recommended."
+            }
+        ],
+        "payment_gateway": {
+            "provider": "paystack",
+            "currency": "EUR",
+            "deposit_percentage": 30
+        }
     },
     "active_features": {
         "enable_spatial_commerce": true,

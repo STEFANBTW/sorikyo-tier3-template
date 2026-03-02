@@ -36,24 +36,40 @@
 
   /* Spacing Scale (base: 16px) */
   --space-unit: 16px;
-  --space-xs: calc(var(--space-unit) * 0.25);   /* 4px */
-  --space-sm: calc(var(--space-unit) * 0.5);    /* 8px */
-  --space-md: var(--space-unit);                 /* 16px */
-  --space-lg: calc(var(--space-unit) * 1.5);    /* 24px */
-  --space-xl: calc(var(--space-unit) * 2);      /* 32px */
-  --space-2xl: calc(var(--space-unit) * 3);     /* 48px */
-  --space-3xl: calc(var(--space-unit) * 4);     /* 64px */
+  --space-xs: calc(var(--space-unit) * 0.25);
+  /* 4px */
+  --space-sm: calc(var(--space-unit) * 0.5);
+  /* 8px */
+  --space-md: var(--space-unit);
+  /* 16px */
+  --space-lg: calc(var(--space-unit) * 1.5);
+  /* 24px */
+  --space-xl: calc(var(--space-unit) * 2);
+  /* 32px */
+  --space-2xl: calc(var(--space-unit) * 3);
+  /* 48px */
+  --space-3xl: calc(var(--space-unit) * 4);
+  /* 64px */
 
   /* Type Scale */
-  --text-xs: 0.75rem;    /* 12px */
-  --text-sm: 0.875rem;   /* 14px */
-  --text-base: 1rem;     /* 16px */
-  --text-lg: 1.125rem;   /* 18px */
-  --text-xl: 1.25rem;    /* 20px */
-  --text-2xl: 1.5rem;    /* 24px */
-  --text-3xl: 1.875rem;  /* 30px */
-  --text-4xl: 2.25rem;   /* 36px */
-  --text-5xl: 3rem;      /* 48px */
+  --text-xs: 0.75rem;
+  /* 12px */
+  --text-sm: 0.875rem;
+  /* 14px */
+  --text-base: 1rem;
+  /* 16px */
+  --text-lg: 1.125rem;
+  /* 18px */
+  --text-xl: 1.25rem;
+  /* 20px */
+  --text-2xl: 1.5rem;
+  /* 24px */
+  --text-3xl: 1.875rem;
+  /* 30px */
+  --text-4xl: 2.25rem;
+  /* 36px */
+  --text-5xl: 3rem;
+  /* 48px */
 
   /* Line Heights */
   --leading-tight: 1.2;
@@ -134,6 +150,7 @@
    This protects users with vestibular disorders. */
 
 @media (prefers-reduced-motion: reduce) {
+
   *,
   *::before,
   *::after {
@@ -297,4 +314,54 @@
   font-family: var(--font-mono);
   font-size: var(--text-sm);
   color: var(--color-text-muted);
+}
+
+/* ─── UX Toggles overrides (Phase 2 Omni-Stack) ────────────── */
+
+html.sorikyo-contrast-override {
+  --color-bg: #000000;
+  --color-surface: #0a0a0a;
+  --color-surface-elevated: #111111;
+  --color-border: #444444;
+  --color-text: #FFFFFF;
+  --color-accent: #FFFF00;
+  /* Intense yellow for max visibility */
+}
+
+/* Force strip motion class applied by JS data-sorikyo-toggle */
+html.sorikyo-motion-override *,
+html.sorikyo-motion-override *::before,
+html.sorikyo-motion-override *::after {
+  animation-duration: 0ms !important;
+  animation-delay: 0ms !important;
+  transition-duration: 0ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* ─── HTML5 Semantic Baselines ────────────────────────────── */
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-primary);
+  background: var(--color-bg);
+  color: var(--color-text);
+  line-height: var(--leading-normal);
+}
+
+img,
+video {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+header,
+main,
+footer,
+section,
+article,
+nav,
+aside {
+  display: block;
 }
