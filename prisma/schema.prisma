@@ -1,0 +1,134 @@
+// ============================================================
+// SoriKyo Tier 3 — Prisma Schema
+// ACID-compliant PostgreSQL with pgvector (1536-dim embeddings)
+// ============================================================
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  directUrl  = env("DIRECT_URL")
+  extensions = [vector]
+}
+
+// ─── Enterprise Booking Engine ──────────────────────────────
+// ACID-compliant booking with unique constraints to prevent
+// time-slot collisions during high-concurrency traffic spikes.
+
+model Enterprise_Booking {
+  id          String   @id @default(uuid())
+  userId      String
+  serviceId   String
+  artistId    String?
+  startTime   DateTime
+  endTime     DateTime
+  status      BookingStatus @default(PENDING)
+  depositPaid Boolean      @default(false)
+  totalPrice  Float
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Prevent double-booking: same artist cannot have overlapping slots
+  @@unique([artistId, startTime, endTime], name: "unique_artist_timeslot")
+  @@index([userId])
+  @@index([serviceId])
+  @@index([startTime, endTime])
+  @@map("enterprise_bookings")
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+// ─── Spatial Commerce Inventory ─────────────────────────────
+// Stores product/service inventory with 3D model metadata
+// for the WebGL/Three.js Draco spatial commerce environment.
+
+model Spatial_Commerce_Inventory {
+  id                    String   @id @default(uuid())
+  sku                   String   @unique
+  name                  String
+  description           String?
+  price                 Float
+  stock                 Int      @default(0)
+  category              String?
+  dracoGlbUrl           String?  @map("draco_glb_url")
+  normalMapUrl          String?  @map("normal_map_url")
+  pbrRoughnessMetadata  Json?    @map("pbr_roughness_metadata")
+  thumbnailUrl          String?
+  isActive              Boolean  @default(true)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@index([category])
+  @@index([isActive])
+  @@map("spatial_commerce_inventory")
+}
+
+// ─── Knowledge Embedding (pgvector) ─────────────────────────
+// Stores 1536-dimensional vectors from OpenAI text-embedding-3-small
+// for both Semantic Vibe Search and Generative RAG AI Receptionist.
+
+model Knowledge_Embedding {
+  id        String   @id @default(uuid())
+  content   String
+  metadata  Json?
+  source    String?
+  embedding Unsupported("vector(1536)")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("knowledge_embeddings")
+}
+
+// ─── Dynamic QR Analytics ───────────────────────────────────
+// Logs device type, geolocation, timestamp, and campaign target
+// for pre-redirect analytics on dynamic QR code scans.
+
+model Dynamic_QR_Analytics {
+  id               String   @id @default(uuid())
+  campaignId       String   @map("target_campaign_id")
+  deviceType       String?  @map("device_type")
+  userAgent        String?  @map("user_agent")
+  ipAddress        String?  @map("ip_address")
+  geolocationLat   Float?   @map("geolocation_lat")
+  geolocationLng   Float?   @map("geolocation_lng")
+  referrer         String?
+  scannedAt        DateTime @default(now())
+
+  campaign         QR_Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@index([campaignId])
+  @@index([scannedAt])
+  @@map("dynamic_qr_analytics")
+}
+
+// ─── QR Campaign ────────────────────────────────────────────
+// Stores the active campaign URLs for the Dynamic QR Redirector.
+
+model QR_Campaign {
+  id          String   @id @default(uuid())
+  slug        String   @unique
+  name        String
+  targetUrl   String   @map("target_url")
+  isActive    Boolean  @default(true)
+  startDate   DateTime?
+  endDate     DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  analytics   Dynamic_QR_Analytics[]
+
+  @@index([isActive])
+  @@map("qr_campaigns")
+}

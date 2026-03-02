@@ -1,0 +1,44 @@
+# ============================================================
+# SoriKyo Tier 3 — Docker Compose (Coolify-Ready)
+# Zero-downtime enterprise deployment configuration
+# ============================================================
+
+version: '3.8'
+
+services:
+  sorikyo-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sorikyo-tier3-api
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=${DATABASE_URL}
+      - DIRECT_URL=${DIRECT_URL}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - SERVER_PORT=3000
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+      - FRONTEND_ORIGIN=${FRONTEND_ORIGIN}
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/config/brand"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

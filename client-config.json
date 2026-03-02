@@ -1,0 +1,95 @@
+{
+    "brand_identity": {
+        "colors": {
+            "primary": "#0A0A0A",
+            "secondary": "#1A1A1A",
+            "background": "#050505",
+            "text_primary": "#E0E0E0",
+            "accent": "#FFFFFF"
+        },
+        "typography": {
+            "primary_font": "Inter, sans-serif",
+            "secondary_font": "JetBrains Mono, monospace"
+        },
+        "aesthetic_directive": "Brutalist, scientific, greyscale, high-contrast",
+        "spacing_scale": "16px"
+    },
+    "business_logic": {
+        "company_details": {
+            "name": "NOIR INK STUDIO",
+            "support_email": "studio@noirink.com",
+            "whatsapp_number": "+31612345678",
+            "physical_address": "Keizersgracht 420, 1016 GD Amsterdam"
+        },
+        "ai_knowledge_base_seed": [
+            "NOIR INK STUDIO is a premium tattoo and body art studio located in the heart of Amsterdam's canal district.",
+            "We specialize in fine-line work, blackwork, geometric patterns, and photorealistic portraits.",
+            "All artists have a minimum of 8 years professional experience and hold current hygiene certifications.",
+            "PRICING: Custom Tattoo Sessions start at €150/hour with a 2-hour minimum. Fine Line Portraits are €200/hour with a 3-hour minimum. Cover-Up Consultations are complimentary (30 minutes). Standard Piercings are €45 (15 minutes). Premium Piercings (dermals, industrials) are €85 (20 minutes).",
+            "CANCELLATION POLICY: Appointments cancelled less than 48 hours in advance forfeit the deposit. Deposits are 30% of estimated session cost. No-shows forfeit the full deposit with no rescheduling.",
+            "AFTERCARE: Keep the tattoo wrapped for 2-4 hours. Wash gently with unscented soap. Apply a thin layer of recommended aftercare balm 3x daily for 2 weeks. Avoid direct sunlight, swimming, and soaking for 4 weeks. Contact the studio immediately if you notice signs of infection.",
+            "STUDIO HOURS: Tuesday–Saturday 10:00–20:00. Sunday–Monday closed. Walk-ins accepted Tuesday–Thursday only, subject to artist availability.",
+            "AGE POLICY: All clients must be 18+ with valid government-issued photo ID. No exceptions.",
+            "BRAND VOICE: We communicate with clinical precision and understated confidence. No slang, no emojis in professional correspondence. Tone is warm but authoritative."
+        ],
+        "services_catalog": [
+            {
+                "id": "svc_custom_tattoo",
+                "name": "Custom Tattoo Session",
+                "description": "Bespoke tattoo design and application by your chosen artist",
+                "price_per_unit": 150,
+                "price_unit": "hour",
+                "minimum_duration_minutes": 120,
+                "deposit_percentage": 30,
+                "category": "tattoo"
+            },
+            {
+                "id": "svc_fine_line",
+                "name": "Fine Line Portrait",
+                "description": "Precision fine-line portraiture with micro-needle technique",
+                "price_per_unit": 200,
+                "price_unit": "hour",
+                "minimum_duration_minutes": 180,
+                "deposit_percentage": 30,
+                "category": "tattoo"
+            },
+            {
+                "id": "svc_coverup_consult",
+                "name": "Cover-Up Consultation",
+                "description": "Free assessment of existing work and cover-up feasibility",
+                "price_per_unit": 0,
+                "price_unit": "session",
+                "minimum_duration_minutes": 30,
+                "deposit_percentage": 0,
+                "category": "consultation"
+            },
+            {
+                "id": "svc_piercing_standard",
+                "name": "Piercing — Standard",
+                "description": "Earlobe, nostril, and standard cartilage piercings",
+                "price_per_unit": 45,
+                "price_unit": "session",
+                "minimum_duration_minutes": 15,
+                "deposit_percentage": 0,
+                "category": "piercing"
+            },
+            {
+                "id": "svc_piercing_premium",
+                "name": "Piercing — Premium",
+                "description": "Dermal anchors, industrials, and advanced placements",
+                "price_per_unit": 85,
+                "price_unit": "session",
+                "minimum_duration_minutes": 20,
+                "deposit_percentage": 0,
+                "category": "piercing"
+            }
+        ]
+    },
+    "active_features": {
+        "enable_spatial_commerce": true,
+        "enable_rag_receptionist": true,
+        "enable_booking_engine": true,
+        "enable_dynamic_qr": true,
+        "strict_wcag_enforcement": true
+    }
+}
